@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
+<meta name="author" content="usta">
+<meta name="description" content="Calculator">
+
+<title>Calculator</title>
+<style type="text/css">
+body {
+	-webkit-tap-highlight-color: transparent;
+	-webkit-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
+#main {
+  display: flex;
+	position: absolute;
+	justify-content: center;
+  align-items: center;
+	left: 0px;
+	top: 0px;
+	right: 0px;
+	bottom: 0px;
+}
+
+#history {
+  width: 297px;
+  height: 27px;
+  text-align: right;
+  font-size: 22px;
+	cursor: default;
+	caret-color: transparent;
+}
+#history::selection {
+	background: transparent;
+}
+
+#result {
+  width: 297px;
+  height: 33px;
+  text-align: right;
+  font-size: 25px;
+  margin-top: 20px;
+	cursor: default;
+	caret-color: transparent;
+}
+#result::selection {
+	background: transparent;
+}
+
+#process {
+  width: 280px;
+  height: 33px;
+  text-align: right;
+  font-size: 25px;
+  margin-top: 13px;
+  margin-bottom: 7px;
+	padding-right: 18px;
+}
+
+.tool {
+	display: inline-flex;
+}
+
+.btn {
+  width: 63px;
+  height: 63px;
+  margin: 5px;
+  text-align: center;
+  font-size: 30px;
+	cursor: pointer;
+}
+.btn.active {
+	transform: scale(1.1);
+}
+
+.tooltip {
+	display: none;
+	position: absolute;
+	white-space: nowrap;
+	overflow: hidden;
+	text-align: center;
+	font-size: 14px;
+	cursor: pointer;
+	background-color: rgba(91, 91, 91, 0.8);
+	color: white;
+	padding: 5px;
+	border-radius: 5px;
+	min-width: 15px;
+	max-width: 63px;
+	height: 15px;
+	z-index: 1;
+}
+.tooltip:hover {
+	display: block;
+}
+input[type="button"]:hover + .tooltip {
+	display: block;
+}
+</style>
+</head>
+<body onclick="clickBody()">
+
+<div id="main">
+  <div id="calc">
+    <input type="text" id="history" class="txt" onkeydown="return false"><br>
+    <input type="text" id="result" class="txt" onkeydown="return false"><br>
+    <input type="text" id="process" class="txt" autofocus><br>
+		<div class="tool">
+    	<input type="button" id="bg" class="btn" value="💡" onclick="change_bg()">
+			<div class="tooltip" onclick="change_bg()">B</div>
+		</div>
+		<div class="tool">
+    	<input type="button" id="clear" class="btn" value="AC" onclick="clear_func()">
+			<div class="tooltip" onclick="clear_func()">ESC</div>
+		</div>
+		<div class="tool">
+    	<input type="button" id="ce" class="btn" value="CE" onclick="clear_entry()">
+			<div class="tooltip" onclick="clear_entry()">C</div>
+		</div>
+    <input type="button" id="divide" class="btn" value="÷" onclick="res('/')"><br>
+    <input type="button" id="7" class="btn" value="7" onclick="add_char('7')">
+    <input type="button" id="8" class="btn" value="8" onclick="add_char('8')">
+    <input type="button" id="9" class="btn" value="9" onclick="add_char('9')">
+    <input type="button" id="multi" class="btn" value="x" onclick="res('x')"><br>
+    <input type="button" id="4" class="btn" value="4" onclick="add_char('4')">
+    <input type="button" id="5" class="btn" value="5" onclick="add_char('5')">
+    <input type="button" id="6" class="btn" value="6" onclick="add_char('6')">
+    <input type="button" id="subt" class="btn" value="-" onclick="res('-')"><br>
+    <input type="button" id="1" class="btn" value="1" onclick="add_char('1')">
+    <input type="button" id="2" class="btn" value="2" onclick="add_char('2')">
+    <input type="button" id="3" class="btn" value="3" onclick="add_char('3')">
+    <input type="button" id="collect" class="btn" value="+" onclick="res('+')"><br>
+    <input type="button" id="0" class="btn" value="0" onclick="add_char('0')">
+    <input type="button" id="," class="btn" value="," onclick="add_char(',')">
+    <input type="button" id="delet" class="btn" value="←" onclick="delete_char()">
+		<input type="button" id="equals" class="btn" value="=" onclick="res('=')">
+  </div>
+</div>
+<script>
+var body = document.body;
+var historyy = document.getElementById("history");
+var result = document.getElementById("result");
+var process = document.getElementById("process");
+var list = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", ","];
+var cntrl = 0, re = 0, prcs = "=";
+var curs, sel, val;
+
+body.style.background = "rgb(0, 0, 0)";
+
+function clickBody() {
+  process.focus();
+}
+
+function animation(e) {
+	e.classList.add("active");
+	setTimeout(function() {
+		e.classList.remove("active");
+  }, 100);
+}
+
+function change_bg() {
+	animation(document.getElementById("bg"));
+
+  if (body.style.background != "rgb(0, 0, 0)") {
+    body.style.background = "rgb(0, 0, 0)";
+  }
+  else {
+    body.style.background = "rgb(255, 255, 255)";
+  }
+}
+
+function clear_func() {
+	animation(document.getElementById("clear"));
+
+  historyy.value = "";
+  result.value = "";
+  process.value = "";
+	re = 0;
+}
+
+function clear_entry() {
+	animation(document.getElementById("ce"));
+
+	process.setSelectionRange(0, process.value.length);
+}
+
+function cursor() {
+    return {
+        start: process.selectionStart,
+        end: process.selectionEnd
+    };
+}
+
+function delete_char() {
+	animation(document.getElementById("delet"));
+
+	curs = cursor().start;
+	sel = cursor().end - cursor().start;
+
+	if (sel == 0 && cursor().end != 0) {
+  	process.value = process.value.slice(0, cursor().end-1) + process.value.slice(Math.abs(cursor().end));
+		process.setSelectionRange(curs-1, curs-1);
+	}
+	else {
+  	process.value = process.value.slice(0, cursor().start) + process.value.slice(Math.abs(cursor().end));
+		process.setSelectionRange(curs, curs);
+	}
+}
+
+function add_char(e) {
+	animation(document.getElementById(e));
+
+  if (process.value.length < 15) {
+	  if (e != ",") {
+			curs = cursor().start;
+			sel = cursor().end - cursor().start;
+
+			if (sel == 0) {
+				process.value = process.value.slice(0, cursor().end) + e + process.value.slice(Math.abs(cursor().end));
+				process.setSelectionRange(curs+1, curs+1);
+			}
+			else {
+				process.value = process.value.slice(0, cursor().start) + process.value.slice(Math.abs(cursor().end));
+				process.value = process.value.slice(0, curs) + e + process.value.slice(Math.abs(curs));
+				process.setSelectionRange(curs+1, curs+1);
+			}
+  	}
+		else {
+			for (let i = 0; i <= process.value.length; i++) {
+				if (process.value[i] == ",") {
+					cntrl = 1;
+					break;
+				}
+				else {
+					cntrl = 0;
+				}
+			}
+			if (cntrl == 0) {
+				curs = cursor().start;
+				sel = cursor().end - cursor().start;
+
+				if (sel == 0) {
+					process.value = process.value.slice(0, cursor().end) + e + process.value.slice(Math.abs(cursor().end));
+					process.setSelectionRange(curs+1, curs+1);
+				}
+				else {
+					process.value = process.value.slice(0, cursor().start) + process.value.slice(Math.abs(cursor().end));
+					process.value = process.value.slice(0, curs) + e + process.value.slice(Math.abs(curs));
+					process.setSelectionRange(curs+1, curs+1);
+				}
+			}
+			else {
+				curs = cursor().start;
+				sel = cursor().end - cursor().start;
+
+				if (sel != 0) {
+					var rest = process.value.slice(0, cursor().start) + process.value.slice(Math.abs(cursor().end));
+					for (let i = 0; i <= rest.length; i++) {
+						if (rest[i] == ",") {
+							cntrl = 1;
+							break;
+						}
+						else {
+							cntrl = 0;
+						}
+					}
+					if (cntrl == 0) {
+						process.value = rest;
+						process.value = process.value.slice(0, curs) + e + process.value.slice(Math.abs(curs));
+						process.setSelectionRange(curs+1, curs+1);
+					}
+				}
+			}
+		}
+  }
+	else {
+		curs = cursor().start;
+		sel = cursor().end - cursor().start;
+
+		if (sel != 0) {
+			process.value = process.value.slice(0, cursor().start) + process.value.slice(Math.abs(cursor().end));
+			process.value = process.value.slice(0, curs) + e + process.value.slice(Math.abs(curs));
+			process.setSelectionRange(curs+1, curs+1);
+		}
+	}
+}
+
+function res(e) {
+	var num = Number(process.value.replace(",", "."));
+
+	if (process.value == ",") {
+	}
+	else if (e == "=") {
+		animation(equals);
+
+		if (result.value != "" && process.value == "") {
+			result.value = "";
+			process.value = re.toString().replace(".", ",");
+			process.scrollLeft = process.scrollWidth;
+			prcs = "=";
+		}
+		else if (result.value != "" && process.value != "") {
+			if (prcs == "/") {
+				if (process.value == 0) {
+					alert("Result: Undefined");
+				}
+				else {
+					val = re / num;
+					val = parseFloat(val.toFixed(5).slice(0, -1));
+			  	if (val.toString().length < 16) {
+						historyy.value = parseFloat(re.toFixed(5).slice(0, -1)).toString().replace(".", ",") + prcs + parseFloat(num.toFixed(5).slice(0, -1)).toString().replace(".", ",");
+						historyy.scrollLeft = historyy.scrollWidth;
+						result.value = "";
+						process.value = val.toString().replace(".", ",");
+						process.scrollLeft = process.scrollWidth;
+						prcs = "=";
+					}
+					else {
+						alert("The result is too long, you cannot process.\nResult: " + val.toString().replace(".", ","));
+					}
+				}
+			}
+			else if (prcs == "x") {
+				val = re * num;
+				val = parseFloat(val.toFixed(5).slice(0, -1));
+			  if (val.toString().length < 16) {
+					historyy.value = parseFloat(re.toFixed(5).slice(0, -1)).toString().replace(".", ",") + prcs + parseFloat(num.toFixed(5).slice(0, -1)).toString().replace(".", ",");
+					historyy.scrollLeft = historyy.scrollWidth;
+					result.value = "";
+					process.value = val.toString().replace(".", ",");
+					process.scrollLeft = process.scrollWidth;
+					prcs = "=";
+				}
+				else {
+					alert("The result is too long, you cannot process.\nResult: " + val.toString().replace(".", ","));
+				}
+			}
+			else if (prcs == "-") {
+				val = re - num;
+				val = parseFloat(val.toFixed(5).slice(0, -1));
+			  if (val.toString().length < 16) {
+					historyy.value = parseFloat(re.toFixed(5).slice(0, -1)).toString().replace(".", ",") + prcs + parseFloat(num.toFixed(5).slice(0, -1)).toString().replace(".", ",");
+					historyy.scrollLeft = historyy.scrollWidth;
+					result.value = "";
+					process.value = val.toString().replace(".", ",");
+					process.scrollLeft = process.scrollWidth;
+					prcs = "=";
+				}
+				else {
+					alert("The result is too long, you cannot process.\nResult: " + val.toString().replace(".", ","));
+				}
+			}
+			else if (prcs == "+") {
+				val = re + num;
+				val = parseFloat(val.toFixed(5).slice(0, -1));
+			  if (val.toString().length < 16) {
+					historyy.value = parseFloat(re.toFixed(5).slice(0, -1)).toString().replace(".", ",") + prcs + parseFloat(num.toFixed(5).slice(0, -1)).toString().replace(".", ",");
+					historyy.scrollLeft = historyy.scrollWidth;
+					result.value = "";
+					process.value = val.toString().replace(".", ",");
+					process.scrollLeft = process.scrollWidth;
+					prcs = "=";
+				}
+				else {
+					alert("The result is too long, you cannot process.\nResult: " + val.toString().replace(".", ","));
+				}
+			}
+		}
+	}
+  else if (e == "/") {
+		animation(divide);
+
+		if (result.value == "" && process.value != "") {
+			re = parseFloat(num.toFixed(5).slice(0, -1));
+			historyy.value = "";
+			process.value = "";
+			result.value = re.toString().replace(".", ",") + " /";
+			result.scrollLeft = result.scrollWidth;
+			prcs = "/";
+		}
+		else if (result.value != "" && process.value == "") {
+			result.value = re.toString().replace(".", ",") + " /";
+			result.scrollLeft = result.scrollWidth;
+			prcs = "/";
+		}
+		else if (result.value != "" && process.value != "") {
+			if (prcs == "/") {
+				if (process.value == 0) {
+					alert("Result: Undefined");
+				}
+				else {
+					val = re / num;
+					val = parseFloat(val.toFixed(5).slice(0, -1));
+					if (val.toString().length < 16) {
+						if (historyy.value == "") {
+							historyy.value = re.toString().replace(".", ",") + prcs + parseFloat(num.toFixed(5).slice(0, -1)).toString().replace(".", ",");
+							historyy.scrollLeft = historyy.scrollWidth;
+						}
+						else {
+							historyy.value += prcs + parseFloat(num.toFixed(5).slice(0, -1)).toString().replace(".", ",");
+							historyy.scrollLeft = historyy.scrollWidth;
+						}
+						process.value = "";
+						re = val;
+						result.value = val.toString().replace(".", ",") + " /";
+						result.scrollLeft = result.scrollWidth;
+						prcs = "/";
+					}
+					else {
+						alert("The result is too long, you cannot process.\nResult: " + val.toString().replace(".", ","));
+					}
+				}
+			}
+			else if (prcs == "x") {
+				val = re * num;
+				val = parseFloat(val.toFixed(5).slice(0, -1));
+				if (val.toString().length < 16) {
+					if (historyy.value == "") {
+						historyy.value = re.toString().replace(".", ",") + prcs + parseFloat(num.toFixed(5).slice(0, -1)).toString().replace(".", ",");
+						historyy.scrollLeft = historyy.scrollWidth;
+					}
+					else {
+						historyy.value += prcs + parseFloat(num.toFixed(5).slice(0, -1)).toString().replace(".", ",");
+						historyy.scrollLeft = historyy.scrollWidth;
+					}
+					process.value = "";
+					re = val;
+					result.value = val.toString().replace(".", ",") + " /";
+					result.scrollLeft = result.scrollWidth;
+					prcs = "/";
+				}
+				else {
+					alert("The result is too long, you cannot process.\nResult: " + val.toString().replace(".", ","));
+				}
+			}
+			else if (prcs == "-") {
+				val = re - num;
+				val = parseFloat(val.toFixed(5).slice(0, -1));
+				if (val.toString().length < 16) {
+					if (historyy.value == "") {
+						historyy.value = re.toString().replace(".", ",") + prcs + parseFloat(num.toFixed(5).slice(0, -1)).toString().replace(".", ",");
+						historyy.scrollLeft = historyy.scrollWidth;
+					}
+					else {
+						historyy.value += prcs + parseFloat(num.toFixed(5).slice(0, -1)).toString().replace(".", ",");
+						historyy.scrollLeft = historyy.scrollWidth;
+					}
+					process.value = "";
+					re = val;
+					result.value = val.toString().replace(".", ",") + " /";
+					result.scrollLeft = result.scrollWidth;
+					prcs = "/";
+				}
+				else {
+					alert("The result is too long, you cannot process.\nResult: " + val.toString().replace(".", ","));
+				}
+			}
+			else if (prcs == "+") {
+				val = re + num;
+				val = parseFloat(val.toFixed(5).slice(0, -1));
+				if (val.toString().length < 16) {
+					if (historyy.value == "") {
+						historyy.value = re.toString().replace(".", ",") + prcs + parseFloat(num.toFixed(5).slice(0, -1)).toString().replace(".", ",");
+						historyy.scrollLeft = historyy.scrollWidth;
+					}
+					else {
+						historyy.value += prcs + parseFloat(num.toFixed(5).slice(0, -1)).toString().replace(".", ",");
+						historyy.scrollLeft = historyy.scrollWidth;
+					}
+					process.value = "";
+					re = val;
+					result.value = val.toString().replace(".", ",") + " /";
+					result.scrollLeft = result.scrollWidth;
+					prcs = "/";
+				}
+				else {
+					alert("The result is too long, you cannot process.\nResult: " + val.toString().replace(".", ","));
+				}
+			}
+		}
+  }
+  else if (e == "x") {
+		animation(multi);
+
+		if (result.value == "" && process.value != "") {
+			re = parseFloat(num.toFixed(5).slice(0, -1));
+			historyy.value = "";
+			process.value = "";
+			result.value = re.toString().replace(".", ",") + " x";
+			result.scrollLeft = result.scrollWidth;
+			prcs = "x";
+		}
+		else if (result.value != "" && process.value == "") {
+			result.value = re.toString().replace(".", ",") + " x";
+			result.scrollLeft = result.scrollWidth;
+			prcs = "x";
+		}
+		else if (result.value != "" && process.value != "") {
+			if (prcs == "/") {
+				if (process.value == 0) {
+					alert("Result: Undefined");
+				}
+				else {
+					val = re / num;
+					val = parseFloat(val.toFixed(5).slice(0, -1));
+					if (val.toString().length < 16) {
+						if (historyy.value == "") {
+							historyy.value = re.toString().replace(".", ",") + prcs + parseFloat(num.toFixed(5).slice(0, -1)).toString().replace(".", ",");
+							historyy.scrollLeft = historyy.scrollWidth;
+						}
+						else {
+							historyy.value += prcs + parseFloat(num.toFixed(5).slice(0, -1)).toString().replace(".", ",");
+							historyy.scrollLeft = historyy.scrollWidth;
+						}
+						process.value = "";
+						re = val;
+						result.value = val.toString().replace(".", ",") + " x";
+						result.scrollLeft = result.scrollWidth;
+						prcs = "x";
+					}
+					else {
+						alert("The result is too long, you cannot process.\nResult: " + val.toString().replace(".", ","));
+					}
+				}
+			}
+			else if (prcs == "x") {
+				val = re * num;
+				val = parseFloat(val.toFixed(5).slice(0, -1));
+				if (val.toString().length < 16) {
+					if (historyy.value == "") {
+						historyy.value = re.toString().replace(".", ",") + prcs + parseFloat(num.toFixed(5).slice(0, -1)).toString().replace(".", ",");
+						historyy.scrollLeft = historyy.scrollWidth;
+					}
+					else {
+						historyy.value += prcs + parseFloat(num.toFixed(5).slice(0, -1)).toString().replace(".", ",");
+						historyy.scrollLeft = historyy.scrollWidth;
+					}
+					process.value = "";
+					re = val;
+					result.value = val.toString().replace(".", ",") + " x";
+					result.scrollLeft = result.scrollWidth;
+					prcs = "x";
+				}
+				else {
+					alert("The result is too long, you cannot process.\nResult: " + val.toString().replace(".", ","));
+				}
+			}
+			else if (prcs == "-") {
+				val = re - num;
+				val = parseFloat(val.toFixed(5).slice(0, -1));
+				if (val.toString().length < 16) {
+					if (historyy.value == "") {
+						historyy.value = re.toString().replace(".", ",") + prcs + parseFloat(num.toFixed(5).slice(0, -1)).toString().replace(".", ",");
+						historyy.scrollLeft = historyy.scrollWidth;
+					}
+					else {
+						historyy.value += prcs + parseFloat(num.toFixed(5).slice(0, -1)).toString().replace(".", ",");
+						historyy.scrollLeft = historyy.scrollWidth;
+					}
+					process.value = "";
+					re = val;
+					result.value = val.toString().replace(".", ",") + " x";
+					result.scrollLeft = result.scrollWidth;
+					prcs = "x";
+				}
+				else {
+					alert("The result is too long, you cannot process.\nResult: " + val.toString().replace(".", ","));
+				}
+			}
+			else if (prcs == "+") {
+				val = re + num;
+				val = parseFloat(val.toFixed(5).slice(0, -1));
+				if (val.toString().length < 16) {
+					if (historyy.value == "") {
+						historyy.value = re.toString().replace(".", ",") + prcs + parseFloat(num.toFixed(5).slice(0, -1)).toString().replace(".", ",");
+						historyy.scrollLeft = historyy.scrollWidth;
+					}
+					else {
+						historyy.value += prcs + parseFloat(num.toFixed(5).slice(0, -1)).toString().replace(".", ",");
+						historyy.scrollLeft = historyy.scrollWidth;
+					}
+					process.value = "";
+					re = val;
+					result.value = val.toString().replace(".", ",") + " x";
+					result.scrollLeft = result.scrollWidth;
+					prcs = "x";
+				}
+				else {
+					alert("The result is too long, you cannot process.\nResult: " + val.toString().replace(".", ","));
+				}
+			}
+		}
+  }
+  else if (e == "-") {
+		animation(subt);
+
+		if (result.value == "" && process.value != "") {
+			re = parseFloat(num.toFixed(5).slice(0, -1));
+			historyy.value = "";
+			process.value = "";
+			result.value = re.toString().replace(".", ",") + " -";
+			result.scrollLeft = result.scrollWidth;
+			prcs = "-";
+		}
+		else if (result.value != "" && process.value == "") {
+			result.value = re.toString().replace(".", ",") + " -";
+			result.scrollLeft = result.scrollWidth;
+			prcs = "-";
+		}
+		else if (result.value != "" && process.value != "") {
+			if (prcs == "/") {
+				if (process.value == 0) {
+					alert("Result: Undefined");
+				}
+				else {
+					val = re / num;
+					val = parseFloat(val.toFixed(5).slice(0, -1));
+					if (val.toString().length < 16) {
+						if (historyy.value == "") {
+							historyy.value = re.toString().replace(".", ",") + prcs + parseFloat(num.toFixed(5).slice(0, -1)).toString().replace(".", ",");
+							historyy.scrollLeft = historyy.scrollWidth;
+						}
+						else {
+							historyy.value += prcs + parseFloat(num.toFixed(5).slice(0, -1)).toString().replace(".", ",");
+							historyy.scrollLeft = historyy.scrollWidth;
+						}
+						process.value = "";
+						re = val;
+						result.value = val.toString().replace(".", ",") + " -";
+						result.scrollLeft = result.scrollWidth;
+						prcs = "-";
+					}
+					else {
+						alert("The result is too long, you cannot process.\nResult: " + val.toString().replace(".", ","));
+					}
+				}
+			}
+			else if (prcs == "x") {
+				val = re * num;
+				val = parseFloat(val.toFixed(5).slice(0, -1));
+				if (val.toString().length < 16) {
+					if (historyy.value == "") {
+						historyy.value = re.toString().replace(".", ",") + prcs + parseFloat(num.toFixed(5).slice(0, -1)).toString().replace(".", ",");
+						historyy.scrollLeft = historyy.scrollWidth;
+					}
+					else {
+						historyy.value += prcs + parseFloat(num.toFixed(5).slice(0, -1)).toString().replace(".", ",");
+						historyy.scrollLeft = historyy.scrollWidth;
+					}
+					process.value = "";
+					re = val;
+					result.value = val.toString().replace(".", ",") + " -";
+					result.scrollLeft = result.scrollWidth;
+					prcs = "-";
+				}
+				else {
+					alert("The result is too long, you cannot process.\nResult: " + val.toString().replace(".", ","));
+				}
+			}
+			else if (prcs == "-") {
+				val = re - num;
+				val = parseFloat(val.toFixed(5).slice(0, -1));
+				if (val.toString().length < 16) {
+					if (historyy.value == "") {
+						historyy.value = re.toString().replace(".", ",") + prcs + parseFloat(num.toFixed(5).slice(0, -1)).toString().replace(".", ",");
+						historyy.scrollLeft = historyy.scrollWidth;
+					}
+					else {
+						historyy.value += prcs + parseFloat(num.toFixed(5).slice(0, -1)).toString().replace(".", ",");
+						historyy.scrollLeft = historyy.scrollWidth;
+					}
+					process.value = "";
+					re = val;
+					result.value = val.toString().replace(".", ",") + " -";
+					result.scrollLeft = result.scrollWidth;
+					prcs = "-";
+				}
+				else {
+					alert("The result is too long, you cannot process.\nResult: " + val.toString().replace(".", ","));
+				}
+			}
+			else if (prcs == "+") {
+				val = re + num;
+				val = parseFloat(val.toFixed(5).slice(0, -1));
+				if (val.toString().length < 16) {
+					if (historyy.value == "") {
+						historyy.value = re.toString().replace(".", ",") + prcs + parseFloat(num.toFixed(5).slice(0, -1)).toString().replace(".", ",");
+						historyy.scrollLeft = historyy.scrollWidth;
+					}
+					else {
+						historyy.value += prcs + parseFloat(num.toFixed(5).slice(0, -1)).toString().replace(".", ",");
+						historyy.scrollLeft = historyy.scrollWidth;
+					}
+					process.value = "";
+					re = val;
+					result.value = val.toString().replace(".", ",") + " -";
+					result.scrollLeft = result.scrollWidth;
+					prcs = "-";
+				}
+				else {
+					alert("The result is too long, you cannot process.\nResult: " + val.toString().replace(".", ","));
+				}
+			}
+		}
+		else if (result.value == "" && process.value == "") {
+			re = 0;
+			result.value = re + " -";
+			prcs = "-";
+		}
+  }
+  else if (e == "+") {
+		animation(collect);
+
+		if (result.value == "" && process.value != "") {
+			re = parseFloat(num.toFixed(5).slice(0, -1));
+			historyy.value = "";
+			process.value = "";
+			result.value = re.toString().replace(".", ",") + " +";
+			result.scrollLeft = result.scrollWidth;
+			prcs = "+";
+		}
+		else if (result.value != "" && process.value == "") {
+			result.value = re.toString().replace(".", ",") + " +";
+			result.scrollLeft = result.scrollWidth;
+			prcs = "+";
+		}
+		else if (result.value != "" && process.value != "") {
+			if (prcs == "/") {
+				if (process.value == 0) {
+					alert("Result: Undefined");
+				}
+				else {
+					val = re / num;
+					val = parseFloat(val.toFixed(5).slice(0, -1));
+					if (val.toString().length < 16) {
+						if (historyy.value == "") {
+							historyy.value = re.toString().replace(".", ",") + prcs + parseFloat(num.toFixed(5).slice(0, -1)).toString().replace(".", ",");
+							historyy.scrollLeft = historyy.scrollWidth;
+						}
+						else {
+							historyy.value += prcs + parseFloat(num.toFixed(5).slice(0, -1)).toString().replace(".", ",");
+							historyy.scrollLeft = historyy.scrollWidth;
+						}
+						process.value = "";
+						re = val;
+						result.value = val.toString().replace(".", ",") + " +";
+						result.scrollLeft = result.scrollWidth;
+						prcs = "+";
+					}
+					else {
+						alert("The result is too long, you cannot process.\nResult: " + val.toString().replace(".", ","));
+					}
+				}
+			}
+			else if (prcs == "x") {
+				val = re * num;
+				val = parseFloat(val.toFixed(5).slice(0, -1));
+				if (val.toString().length < 16) {
+					if (historyy.value == "") {
+						historyy.value = re.toString().replace(".", ",") + prcs + parseFloat(num.toFixed(5).slice(0, -1)).toString().replace(".", ",");
+						historyy.scrollLeft = historyy.scrollWidth;
+					}
+					else {
+						historyy.value += prcs + parseFloat(num.toFixed(5).slice(0, -1)).toString().replace(".", ",");
+						historyy.scrollLeft = historyy.scrollWidth;
+					}
+					process.value = "";
+					re = val;
+					result.value = val.toString().replace(".", ",") + " +";
+					result.scrollLeft = result.scrollWidth;
+					prcs = "+";
+				}
+				else {
+					alert("The result is too long, you cannot process.\nResult: " + val.toString().replace(".", ","));
+				}
+			}
+			else if (prcs == "-") {
+				val = re - num;
+				val = parseFloat(val.toFixed(5).slice(0, -1));
+				if (val.toString().length < 16) {
+					if (historyy.value == "") {
+						historyy.value = re.toString().replace(".", ",") + prcs + parseFloat(num.toFixed(5).slice(0, -1)).toString().replace(".", ",");
+						historyy.scrollLeft = historyy.scrollWidth;
+					}
+					else {
+						historyy.value += prcs + parseFloat(num.toFixed(5).slice(0, -1)).toString().replace(".", ",");
+						historyy.scrollLeft = historyy.scrollWidth;
+					}
+					process.value = "";
+					re = val;
+					result.value = val.toString().replace(".", ",") + " +";
+					result.scrollLeft = result.scrollWidth;
+					prcs = "+";
+				}
+				else {
+					alert("The result is too long, you cannot process.\nResult: " + val.toString().replace(".", ","));
+				}
+			}
+			else if (prcs == "+") {
+				val = re + num;
+				val = parseFloat(val.toFixed(5).slice(0, -1));
+				if (val.toString().length < 16) {
+					if (historyy.value == "") {
+						historyy.value = re.toString().replace(".", ",") + prcs + parseFloat(num.toFixed(5).slice(0, -1)).toString().replace(".", ",");
+						historyy.scrollLeft = historyy.scrollWidth;
+					}
+					else {
+						historyy.value += prcs + parseFloat(num.toFixed(5).slice(0, -1)).toString().replace(".", ",");
+						historyy.scrollLeft = historyy.scrollWidth;
+					}
+					process.value = "";
+					re = val;
+					result.value = val.toString().replace(".", ",") + " +";
+					result.scrollLeft = result.scrollWidth;
+					prcs = "+";
+				}
+				else {
+					alert("The result is too long, you cannot process.\nResult: " + val.toString().replace(".", ","));
+				}
+			}
+		}
+  }
+}
+
+process.addEventListener('keydown', function(event) {
+  if (event.key == "B") {
+		document.getElementById("bg").click();
+  }
+  if (event.key == "b") {
+		document.getElementById("bg").click();
+  }
+  if (event.key == "Escape") {
+		document.getElementById("clear").click();
+  }
+	if (event.key == "C") {
+		document.getElementById("ce").click();
+	}
+	if (event.key == "c") {
+		document.getElementById("ce").click();
+	}
+	if (event.key == "Backspace") {
+		document.getElementById("delet").click();
+	}
+  if (event.key == "Enter") {
+		document.getElementById("equals").click();
+  }
+  if (event.key == "/") {
+		document.getElementById("divide").click();
+  }
+  if (event.key == "*") {
+		document.getElementById("multi").click();
+  }
+  if (event.key == "-") {
+		document.getElementById("subt").click();
+  }
+  if (event.key == "+") {
+		document.getElementById("collect").click();
+  }
+
+  for (let i = 0; i < list.length; i++) {
+    if (event.key == list[i]) {
+			document.getElementById(list[i]).click();
+    }
+		else if (event.key == "Delete" || event.key == "ArrowLeft" || event.key == "ArrowRight") {}
+		else {
+			event.preventDefault();
+		}
+  }
+});
+</script>
+</body>
+</html>
