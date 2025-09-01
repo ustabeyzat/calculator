@@ -2,5 +2,5 @@
 The calculator that can perform basic mathematical operations.
 
 
-https://github.com/user-attachments/assets/063518fa-d506-4ac0-811e-a545b8b89859
+https://github.com/user-attachments/assets/f5a94497-ab19-4b88-8c94-b65874f5b382
 
